@@ -274,8 +274,14 @@ function ReplaceAllTextareas() {
             // Set the type
             type.val("text/html");
 
-            CKEDITOR.replace(textArea.name,{width:'100%',height:'<% RT->Config->Get('MessageBoxRichTextHeight') %>'});
+            var editor = CKEDITOR.replace(textArea.name,{width:'100%',height:'<% RT->Config->Get('MessageBoxRichTextHeight') %>'});
             CKEDITOR.basePath = "<%RT->Config->Get('WebPath')%>/NoAuth/RichText/";
+
+            // When submitting, clear it out if they didn't change it from the initial sig
+            jQuery(window).unload(function(){
+                if ( !editor.checkDirty() )
+                    editor.setData('');
+            });
 
             jQuery("#" + textArea.name + "___Frame").addClass("richtext-editor");
         }
