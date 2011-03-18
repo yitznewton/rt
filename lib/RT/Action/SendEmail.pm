@@ -869,7 +869,7 @@ sub SetReturnAddress {
 
 }
 
-=head2 SetFrom ( From => emailaddress )
+=head2 SetFrom ( From => address )
 
 Set the From: address for outgoing email
 
@@ -1115,7 +1115,7 @@ sub SetHeaderAsEncoding {
 Takes a perl string and optional encoding pass it over
 L<RT::Interface::Email/EncodeToMIME>.
 
-Basicly encode a string using B encoding according to RFC2047.
+Basically, encodes the string using B encoding according to RFC2047.
 
 =cut
 
