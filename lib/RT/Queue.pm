@@ -270,7 +270,7 @@ sub SetLifecycle {
     my $value = shift;
 
     if ( $value && $value ne 'default' ) {
-        return (0, $self->loc('[_1] is not valid lifecycle', $value ))
+        return (0, $self->loc('[_1] is not a valid lifecycle', $value ))
             unless $self->ValidateLifecycle( $value );
     } else {
         $value = undef;
