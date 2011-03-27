@@ -190,33 +190,49 @@ mysql supported foreign keys with cascading deletes.
 sub Delete {
     my $self = shift;
 
-    
-    my $member = $self->MemberObj();
-    if ( $member->IsGroup ) {
-        my $deletable = RT::CachedGroupMembers->new( $self->CurrentUser );
-
-        $deletable->Limit( FIELD    => 'id',
-                           OPERATOR => '!=',
-                           VALUE    => $self->id );
-        $deletable->Limit( FIELD    => 'Via',
-                           OPERATOR => '=',
-                           VALUE    => $self->id );
-
-        while ( my $kid = $deletable->Next ) {
-            my $kid_err = $kid->Delete();
-            unless ($kid_err) {
-                $RT::Logger->error(
-                              "Couldn't delete CachedGroupMember " . $kid->Id );
-                return (undef);
-            }
-        }
+    if ( $self->MemberId == $self->GroupId ) {
+        # deleting self-referenced means that we're deleting a principal
+        # itself and all records where it's a parent or member should
+        # be deleted beforehead
+        return $self->SUPER::Delete( @_ );
     }
-    my $ret = $self->SUPER::Delete();
-    unless ($ret) {
-        $RT::Logger->error( "Couldn't delete CachedGroupMember " . $self->Id );
-        return (undef);
-    }
-    return $ret;
+
+    my $table = $self->Table;
+    my $query = "
+        SELECT CGM3.id FROM
+            $table CGM1
+            CROSS JOIN $table CGM2
+            JOIN $table CGM3
+                ON CGM3.GroupId = CGM1.GroupId AND CGM3.MemberId = CGM2.MemberId
+
+        WHERE
+            CGM1.MemberId = ?
+            AND CGM2.GroupId = ?
+            AND NOT EXISTS (
+                SELECT CGM4.GroupId
+                    FROM $table CGM4
+                    JOIN GroupMembers GM1
+                        ON GM1.GroupId = CGM4.MemberId
+                    JOIN $table CGM5
+                        ON CGM5.GroupId = GM1.MemberId
+                    JOIN $table CGM6
+                        ON CGM6.GroupId = CGM4.MemberId
+                        AND CGM6.MemberId = ?
+                    LEFT JOIN $table CGM7
+                        ON CGM7.GroupId = CGM5.GroupId
+                        AND CGM7.MemberId = ?
+                WHERE
+                    CGM4.GroupId = CGM3.GroupId
+                    AND CGM5.MemberId = CGM3.MemberId
+                    AND CGM7.id IS NULL
+            )
+    ";
+
+    return $RT::Handle->DeleteFromSelect(
+        $table, $query,
+        $self->GroupId, $self->MemberId,
+        $self->GroupId, $self->GroupId,
+    );
 }
 
 
