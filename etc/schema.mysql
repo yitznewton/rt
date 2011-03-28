@@ -203,9 +203,10 @@ create table CachedGroupMembers (
         PRIMARY KEY (id)
 ) ENGINE=InnoDB CHARACTER SET utf8;
 
-CREATE INDEX DisGrouMem  on CachedGroupMembers (GroupId,MemberId,Disabled);
-CREATE INDEX CachedGroupMembers3 on CachedGroupMembers (MemberId, ImmediateParentId);
-
+# we can create UNIQUE ON (GroupId,MemberId), but it only a few bytes shorter than
+# the following and there is no need to do that
+CREATE UNIQUE INDEX DisGrouMem  on CachedGroupMembers (GroupId,MemberId,Disabled);
+CREATE UNIQUE INDEX CachedGroupMembers3  on CachedGroupMembers (MemberId,GroupId,Disabled);
 
 
 CREATE TABLE Users (
