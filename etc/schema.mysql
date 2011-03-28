@@ -189,8 +189,8 @@ CREATE UNIQUE INDEX GroupMembers1 on GroupMembers (GroupId, MemberId);
 
 create table CachedGroupMembers (
         id int auto_increment,
-        GroupId int, # foreign key to Principals
-        MemberId int, # foreign key to Principals
+        GroupId int NOT NULL, # foreign key to Principals
+        MemberId int NOT NULL, # foreign key to Principals
         Via int, #foreign key to CachedGroupMembers. (may point to $self->id)
         ImmediateParentId int, #foreign key to prinicpals.
                                # this points to the group that the member is

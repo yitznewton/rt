@@ -311,8 +311,8 @@ CREATE SEQUENCE cachedgroupmembers_id_seq;
 
 CREATE TABLE CachedGroupMembers (
         id int DEFAULT nextval('cachedgroupmembers_id_seq'),
-        GroupId int, 
-        MemberId int, 
+        GroupId int NOT NULL,
+        MemberId int NOT NULL,
         Via int, 
         ImmediateParentId int, 
         Disabled integer NOT NULL DEFAULT 0 , 

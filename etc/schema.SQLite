@@ -200,8 +200,8 @@ CREATE TABLE GroupMembers (
 
 create table CachedGroupMembers (
         id integer primary key ,
-        GroupId int, 
-        MemberId int, 
+        GroupId int NOT NULL,
+        MemberId int NOT NULL,
         Via int, 
         ImmediateParentId int,
         Disabled int2 NOT NULL DEFAULT 0  # if this cached group member is a member of this group by way of a disabled
