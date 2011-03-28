@@ -199,43 +199,42 @@ sub Delete {
 
     my $table = $self->Table;
     my $query = "
-        SELECT CGM3.id FROM
-            $table CGM1
-            CROSS JOIN $table CGM2
-            JOIN $table CGM3
-                ON CGM3.GroupId = CGM1.GroupId AND CGM3.MemberId = CGM2.MemberId
-
+        SELECT CGM1.id FROM
+            CachedGroupMembers CGM1
+            JOIN CachedGroupMembers CGMA ON CGMA.MemberId = ?
+            JOIN CachedGroupMembers CGMD ON CGMD.GroupId = ?
+            LEFT JOIN GroupMembers GM1
+                ON GM1.GroupId = CGM1.GroupId AND GM1.MemberId = CGM1.MemberId
         WHERE
-            CGM1.MemberId = ?
-            AND CGM2.GroupId = ?
-            AND NOT EXISTS (
-                SELECT CGM4.GroupId
-                    FROM $table CGM4
-                    JOIN GroupMembers GM1
-                        ON GM1.GroupId = CGM4.MemberId
-                    JOIN $table CGM5
-                        ON CGM5.GroupId = GM1.MemberId
-                    JOIN $table CGM6
-                        ON CGM6.GroupId = CGM4.MemberId
-                        AND CGM6.MemberId = ?
-                    LEFT JOIN $table CGM7
-                        ON CGM7.GroupId = CGM5.GroupId
-                        AND CGM7.MemberId = ?
-                WHERE
-                    CGM4.GroupId = CGM3.GroupId
-                    AND CGM5.MemberId = CGM3.MemberId
-                    AND CGM7.id IS NULL
-            )
+            CGM1.GroupId = CGMA.GroupId AND CGM1.MemberId = CGMD.MemberId
+            AND CGM1.GroupId != CGM1.MemberId
+            AND GM1.id IS NULL 
     ";
 
-    return $RT::Handle->DeleteFromSelect(
+    my $res = $RT::Handle->DeleteFromSelect(
         $table, $query,
         $self->GroupId, $self->MemberId,
-        $self->GroupId, $self->GroupId,
     );
+    return $res unless $res;
+
+    $query = "SELECT CGM1.GroupId, CGM2.MemberId FROM
+        $table CGM1 CROSS JOIN $table CGM2
+        LEFT JOIN $table CGM3
+            ON CGM3.GroupId = CGM1.GroupId AND CGM3.MemberId = CGM2.MemberId
+        WHERE
+            CGM1.MemberId = ? AND (CGM1.GroupId != CGM1.MemberId OR CGM1.MemberId = ?)
+            AND CGM2.GroupId = ? AND (CGM2.GroupId != CGM2.MemberId OR CGM2.GroupId = ?)
+            AND CGM3.id IS NULL
+    ";
+    $res = $RT::Handle->InsertFromSelect(
+        $table, ['GroupId', 'MemberId'], $query,
+        $self->GroupId, $self->GroupId,
+        $self->MemberId, $self->MemberId,
+    );
+    return $res unless $res;
+
+    return 1;
 }
-
-
 
 =head2 SetDisabled
 
