@@ -426,6 +426,257 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 =cut
 
 
+=head1 FOR DEVELOPERS
+
+=head2 SQL behind maintaining CGM table
+
+=head3 Terminology
+
+=over 4
+
+=item * An(E) - all ancestors of E including E itself
+
+=item * De(E) - all descendants of E including E itself
+
+=back
+
+=head3 Adding a (G -> M) record
+
+When a new (G -> M) record added we should connect all An(G) to all De(M), so it's
+the following select:
+
+    SELECT CGM1.GroupId, CGM2.MemberId FROM
+        CachedGroupMembers CGM1
+        CROSS JOIN CachedGroupMembers CGM2
+    WHERE
+        CGM1.MemberId = G
+        AND CGM2.GroupId = M
+    ;
+
+It handles G and M itself as we always have (E->E) records.
+
+Some of this records may exist in the table, so we should skip them:
+
+    SELECT CGM1.GroupId, CGM2.MemberId FROM
+        CachedGroupMembers CGM1
+        CROSS JOIN CachedGroupMembers CGM2
+        LEFT JOIN CachedGroupMembers CGM3
+            ON CGM3.GroupId = CGM1.GroupId AND CGM3.MemberId = CGM2.MemberId
+    WHERE
+        CGM1.MemberId = G
+        AND CGM2.GroupId = M
+        AND CGM3.id IS NULL
+    ;
+
+In order to do less checks we should skip (E->E) records, but not those
+that touch our G and M:
+
+    SELECT CGM1.GroupId, CGM2.MemberId FROM
+        CachedGroupMembers CGM1
+        CROSS JOIN CachedGroupMembers CGM2
+        LEFT JOIN CachedGroupMembers CGM3
+            ON CGM3.GroupId = CGM1.GroupId AND CGM3.MemberId = CGM2.MemberId
+    WHERE
+        CGM1.MemberId = G AND (CGM1.GroupId != CGM1.MemberId OR CGM1.MemberId = G)
+        AND CGM2.GroupId = M AND (CGM2.GroupId != CGM2.MemberId OR CGM2.GroupId = M)
+        AND CGM3.id IS NULL
+    ;
+
+=head4 Disabled column
+
+We should handle properly Disabled column.
+
+If the new records we're adding is disabled then all new paths we add as well
+disabled and existing one are not affected.
+
+Otherwise activity of new paths depends on entries that got connected and existing
+paths have to be updated.
+
+New paths:
+
+    SELECT CGM1.GroupId, CGM2.MemberId, IF(CGM1.Disabled+CGM2.Disabled > 0, 1, 0) FROM
+    ...
+
+Updating old paths, the following records should be activated:
+
+    SELECT CGM3.id FROM
+        CachedGroupMembers CGM1
+        CROSS JOIN CachedGroupMembers CGM2
+        JOIN CachedGroupMembers CGM3
+            ON CGM3.GroupId = CGM1.GroupId AND CGM3.MemberId = CGM2.MemberId
+    WHERE
+        CGM1.MemberId = G AND (CGM1.GroupId != CGM1.MemberId OR CGM1.MemberId = G)
+        AND CGM2.GroupId = M AND (CGM2.GroupId != CGM2.MemberId OR CGM2.GroupId = M)
+        AND CGM1.Disabled = 0 AND CGM2.Disabled = 0 AND CGM3.Disabled > 0
+    ;
+
+It's better to do this before we insert new records, so we scan less records
+to find things we need updating.
+
+=head3 mysql performance
+
+Sample results:
+
+    10k  - 0.4x seconds
+    100k - 4.x seconds
+    1M   - 4x.x seconds
+
+As long as innodb_buffer_pool_size is big enough to store insert buffer,
+and MIN(tmp_table_size, max_heap_table_size) allow us to store tmp table
+in the memory. For 100k records we need less than 15 MBytes. Disk I/O
+heavily degrades performance.
+
+=head2 Deleting a (G->M) record
+
+In case record is deleted from GM table we should re-evaluate records in CGM.
+
+Candidates for deletion are any records An(G) -> De(M):
+
+    SELECT CGM3.id FROM
+        CachedGroupMembers CGM1
+        CROSS JOIN CachedGroupMembers CGM2
+        JOIN CachedGroupMembers CGM3
+            ON CGM3.GroupId = CGM1.GroupId AND CGM3.MemberId = CGM2.MemberId
+    WHERE
+        CGM1.MemberId = G
+        AND CGM2.GroupId = M
+    ;
+
+Some of this records may still have alternative routes. A candidate (G', M')
+stays in the table if following records exist in GM and CGM tables.
+(G', X) in CGM, (X,Y) in GM and (Y,M') in CGM, where X ~ An(G) and Y !~ An(G).
+
+    SELECT CGM3.id FROM
+        CachedGroupMembers CGM1
+        CROSS JOIN CachedGroupMembers CGM2
+        JOIN CachedGroupMembers CGM3
+            ON CGM3.GroupId = CGM1.GroupId AND CGM3.MemberId = CGM2.MemberId
+
+    WHERE
+        CGM1.MemberId = G
+        AND CGM2.GroupId = M
+        AND NOT EXISTS (
+            SELECT CGM4.GroupId FROM
+                CachedGroupMembers CGM4
+                    ON CGM4.GroupId = CGM3.GroupId
+                JOIN GroupMembers GM1
+                    ON GM1.GroupId = CGM4.MemberId
+                JOIN GroupMembers CGM5
+                    ON CGM4.GroupId = GM1.MemberId
+                    AND CGM4.MemberId = CGM3.MemberId
+                JOIN CachedGroupMembers CGM6
+                    ON CGM6.GroupId = CGM4.MemberId
+                    AND CGM6.MemberId = G
+                LEFT JOIN CachedGroupMembers CGM7
+                    ON CGM7.GroupId = CGM5.GroupId
+                    AND CGM7.MemberId = G
+            WHERE
+                CGM7.id IS NULL
+        )
+    ;
+
+Fun.
+
+=head3 mysql performance
+
+    10k  - 4.x seconds
+    100k - 13x seconds
+    1M   - not tested
+
+Sadly this query perform much worth comparing to the insert operation. Problem is
+in the select.
+
+=head3 Delete all candidates and re-insert missing
+
+We can delete all candidates (An(G)->De(M)) from CGM table that are not
+real GM records: then insert records once again.
+
+    SELECT CGM1.id FROM
+        CachedGroupMembers CGM1
+        JOIN CachedGroupMembers CGMA ON CGMA.MemberId = G
+        JOIN CachedGroupMembers CGMD ON CGMD.GroupId = M
+        LEFT JOIN GroupMembers GM1
+            ON GM1.GroupId = CGM1.GroupId AND GM1.MemberId = CGM1.MemberId
+    WHERE
+        CGM1.GroupId = CGMA.GroupId AND CGM1.MemberId = CGMD.MemberId
+        AND CGM1.GroupId != CGM1.MemberId
+        AND GM1.id IS NULL
+    ;
+
+Then we can re-insert data back with insert from select described above.
+
+=head4 mysql performance
+
+This solution is faster than perviouse variant, 4-5 times slower than
+create operation and behaves linear.
+
+=head3 Recursive delete
+
+Again, some (An(G), De(M)) pairs should be deleted, but some may stay. If
+delete any pair from the set then An(G) and De(M) sets don't change, so
+we can delete things step by step. Run delete operation, if any was deleted
+then run it once again, do it until operation deletes no rows. We shouldn't
+delete records where:
+
+=over 4
+
+=item * GroupId == MemberId
+
+=item * exists matching GM
+
+=item * exists equivalent GM->CGM pair
+
+=item * exists equivalent CGM->GM pair
+
+=over
+
+Query with most conditions in one NOT EXISTS subquery:
+
+    SELECT CGM1.id FROM
+        CachedGroupMembers CGM1
+        JOIN CachedGroupMembers CGMA ON CGMA.MemberId = G
+        JOIN CachedGroupMembers CGMD ON CGMD.GroupId = M
+    WHERE
+        CGM1.GroupId = CGMA.GroupId AND CGM1.MemberId = CGMD.MemberId
+        AND CGM1.GroupId != CGM1.MemberId
+        AND NOT EXISTS (
+            SELECT * FROM
+                CachedGroupMembers CGML
+                CROSS JOIN GroupMembers GM
+                CROSS JOIN CachedGroupMembers CGMR
+            WHERE
+                CGML.GroupId = CGM1.GroupId
+                AND GM.GroupId = CGML.MemberId
+                AND CGMR.GroupId = GM.MemberId
+                AND CGMR.MemberId = CGM1.MemberId
+                AND (
+                    (CGML.GroupId = CGML.MemberId AND CGMR.GroupId != CGMR.MemberId)
+                    OR 
+                    (CGML.GroupId != CGML.MemberId AND CGMR.GroupId = CGMR.MemberId)
+                )
+        )
+    ;
+
+=head4 mysql performance
+
+It's better than first solution, but still it's not linear. Problem is that
+NOT EXISTS means that for every link that should be deleted we have to check too
+many conditions (too many rows to scan). Still delete + insert behave better and
+more linear.
+
+=head3 Alternative ways
+
+Store additional info in a table, similar to Via and IP we had. Then we can
+do iterative delete like in the last solution. However, this will slowdown
+insert, probably not that much as I suspect we would be able to push new data
+in one query.
+
+=head2 TODO
+
+Update disabled on delete. Update SetDisabled method. Delete all uses of Via and
+IntermidiateParent. Review indexes on all databases. Create upgrade script.
+
+=cut
 
 sub _CoreAccessible {
     {
