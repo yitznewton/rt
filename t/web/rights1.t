@@ -30,7 +30,7 @@ $agent->login( $user_obj->Name, 'customer');
 # Test for absence of Configure and Preferences tabs.
 ok(!$agent->find_link( url => "$RT::WebPath/Admin/",
 		       text => 'Configuration'), "No config tab" );
-ok(!$agent->find_link( url => "$RT::WebPath/User/Prefs.html",
+ok(!$agent->find_link( url => "$RT::WebPath/Prefs/AboutMe.html",
 		       text => 'Preferences'), "No prefs pane" );
 
 # Now test for their presence, one at a time.  Sleep for a bit after
