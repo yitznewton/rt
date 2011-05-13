@@ -262,6 +262,7 @@ sub PSGIApp {
     my $builder = Plack::Builder->new();
 
     for my $static ( RT->Config->Get('StaticRoots') ) {
+        next unless $static;
         if ( ref $static ) {
             if ( ref $static eq 'HASH' ) {
                 $builder->add_middleware( 'Plack::Middleware::Static',
