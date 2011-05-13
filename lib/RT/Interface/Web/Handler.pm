@@ -224,7 +224,7 @@ sub PSGIApp {
 
     $self->InitSessionDir;
 
-    return sub {
+    my $mason = sub {
         my $env = shift;
         RT::ConnectToDatabase() unless RT->InstallMode;
 
@@ -256,6 +256,32 @@ sub PSGIApp {
                                             $self->CleanupRequest()
                                         });
 };
+
+
+    use Plack::Builder;
+    my $builder = Plack::Builder->new();
+
+    for my $static ( RT->Config->Get('StaticRoots') ) {
+        if ( ref $static ) {
+            if ( ref $static eq 'HASH' ) {
+                $builder->add_middleware( 'Plack::Middleware::Static',
+                    %$static );
+            }
+            else {
+                $RT::Logger->error(
+"Invalid config StaticRoots: item can only be a string or a hashref"
+                );
+            }
+        }
+        else {
+            $builder->add_middleware(
+                'Plack::Middleware::Static',
+                path => qr/^\Q$static/,
+                root => $RT::MasonComponentRoot,
+            );
+        }
+    }
+    return $builder->to_app($mason);
 
 sub _psgi_response_cb {
     my $self = shift;
