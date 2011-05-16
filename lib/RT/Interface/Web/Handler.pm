@@ -263,24 +263,35 @@ sub PSGIApp {
 
     for my $static ( RT->Config->Get('StaticRoots') ) {
         next unless $static;
-        if ( ref $static ) {
+        if ( ref $static && ref $static eq 'HASH' ) {
             if ( ref $static eq 'HASH' ) {
-                $builder->add_middleware( 'Plack::Middleware::Static',
-                    %$static );
-            }
-            else {
-                $RT::Logger->error(
-"Invalid config StaticRoots: item can only be a string or a hashref"
+                $builder->add_middleware(
+                    'Plack::Middleware::Static',
+                    pass_through => 1,
+                    %$static
                 );
             }
         }
         else {
-            $builder->add_middleware(
-                'Plack::Middleware::Static',
-                path => qr/^\Q$static/,
-                root => $RT::MasonComponentRoot,
-            );
+            $RT::Logger->error(
+                "Invalid config StaticRoots: item can only be a hashref" );
         }
+    }
+
+    my @system_static;
+    for my $plugin ( RT->Config->Get('Plugins') ) {
+        next unless $plugin;
+        my $dir = catdir( RT::Plugin->new( name => $plugin )->StaticDir );
+        push @system_static, $dir if -e $dir;
+    }
+    push @system_static, $RT::LocalStaticPath, $RT::StaticPath;
+    for my $root (@system_static) {
+        $builder->add_middleware(
+            'Plack::Middleware::Static',
+            path         => sub { s!^/static/!! },
+            root         => $root,
+            pass_through => 1,
+        );
     }
     return $builder->to_app($mason);
 

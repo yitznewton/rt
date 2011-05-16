@@ -130,27 +130,23 @@ Set(@Plugins, ());
 =item C<@StaticRoots>
 
 Set C<@StaticRoots> to serve some paths with static handler.
+It uses the same arguments as in C<Plack::Middleware::Static>.
 
 Example:
 
 C<<<
 Set(
     @StaticRoots,
-
-    # i.e. { path => qr{^/NoAuth/images/}, root => $RT::MasonComponentRoot }
-    "/NoAuth/images/",
     {
-        path => qr{^/static},
-        root => '/local/path/to/static',
+        path => qr{^/static/},
+        root => '/local/path/to/static/parent',
     },
 );
 >>>
 
 =cut
 
-Set( @StaticRoots, '/NoAuth/images/', '/NoAuth/RichText',
-    '/NoAuth/css/ballard/images/', '/NoAuth/css/aileron/images',
-    '/NoAuth/css/images' );
+Set( @StaticRoots, () );
 
 =back
 
