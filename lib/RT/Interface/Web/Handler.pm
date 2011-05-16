@@ -281,8 +281,7 @@ sub PSGIApp {
     my @system_static;
     for my $plugin ( RT->Config->Get('Plugins') ) {
         next unless $plugin;
-        require File::Spec;
-        my $dir = File::Spec->catdir( RT::Plugin->new( name => $plugin )->StaticDir );
+        my $dir = RT::Plugin->new( name => $plugin )->StaticDir;
         push @system_static, $dir if -e $dir;
     }
     push @system_static, $RT::LocalStaticPath, $RT::StaticPath;
