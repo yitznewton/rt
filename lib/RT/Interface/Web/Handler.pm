@@ -282,9 +282,9 @@ sub PSGIApp {
     for my $plugin ( RT->Config->Get('Plugins') ) {
         next unless $plugin;
         my $dir = RT::Plugin->new( name => $plugin )->StaticDir;
-        push @system_static, $dir if -e $dir;
+        push @system_static, $dir if -d $dir;
     }
-    push @system_static, grep { -e } $RT::LocalStaticPath, $RT::StaticPath;
+    push @system_static, grep { -d } $RT::LocalStaticPath, $RT::StaticPath;
     for my $root (@system_static) {
         $builder->add_middleware(
             'Plack::Middleware::Static',
