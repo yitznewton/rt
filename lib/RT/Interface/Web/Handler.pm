@@ -284,7 +284,7 @@ sub PSGIApp {
         my $dir = RT::Plugin->new( name => $plugin )->StaticDir;
         push @system_static, $dir if -e $dir;
     }
-    push @system_static, $RT::LocalStaticPath, $RT::StaticPath;
+    push @system_static, grep { -e } $RT::LocalStaticPath, $RT::StaticPath;
     for my $root (@system_static) {
         $builder->add_middleware(
             'Plack::Middleware::Static',
