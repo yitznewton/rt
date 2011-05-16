@@ -63,11 +63,13 @@ use vars qw($BasePath
  $SbinPath
  $VarPath
  $LexiconPath
+ $StaticPath
  $PluginPath
  $LocalPath
  $LocalEtcPath
  $LocalLibPath
  $LocalLexiconPath
+ $LocalStaticPath
  $LocalPluginPath
  $MasonComponentRoot
  $MasonLocalComponentRoot
