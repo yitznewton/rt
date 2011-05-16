@@ -55,7 +55,7 @@ $onload => undef
 % }
 
 % if ( RT->Config->Get('MessageBoxRichText',  $session{'CurrentUser'}) ) {
-<script type="text/javascript" src="<%RT->Config->Get('WebPath')%>/NoAuth/RichText/ckeditor.js"></script>
+<script type="text/javascript" src="<%RT->Config->Get('WebPath')%>/static/RichText/ckeditor.js"></script>
 % }
 <script type="text/javascript"><!--
 	jQuery( loadTitleBoxStates );

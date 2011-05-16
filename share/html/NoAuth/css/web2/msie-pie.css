@@ -56,5 +56,5 @@ div#footer,
 #main-navigation,
 #page-navigation,
 div#body {
-    behavior: url(<%RT->Config->Get('WebPath')%>/NoAuth/css/images/PIE.htc);
+    behavior: url(<%RT->Config->Get('WebPath')%>/static/css/images/PIE.htc);
 }

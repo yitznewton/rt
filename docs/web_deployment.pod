@@ -66,7 +66,7 @@ B<WARNING: mod_perl 1.99_xx is not supported.>
 
         AddDefaultCharset UTF-8
 
-        Alias /NoAuth/images/ /opt/rt4/share/html/NoAuth/images/
+        Alias /static/ /opt/rt4/share/html/static/
         ScriptAlias / /opt/rt4/sbin/rt-server.fcgi/
 
         DocumentRoot "/opt/rt4/share/html"
@@ -90,7 +90,7 @@ B<WARNING: mod_perl 1.99_xx is not supported.>
 
         AddDefaultCharset UTF-8
 
-        Alias /NoAuth/images/ /opt/rt4/share/html/NoAuth/images/
+        Alias /static/ /opt/rt4/share/html/static/
         ScriptAlias / /opt/rt4/sbin/rt-server.fcgi/
 
         DocumentRoot "/opt/rt4/share/html"
@@ -142,8 +142,8 @@ With the nginx configuration:
             fastcgi_pass 127.0.0.1:9000;
         }
 
-        location /NoAuth/images {
-            root /opt/rt4/share/html;
+        location /static {
+            root /opt/rt4/share/;
         }
     }
 
@@ -152,9 +152,9 @@ With the nginx configuration:
     server.modules += ( "mod_fastcgi" )
     $HTTP["host"] =~ "^rt.example.com" {
         alias.url = (
-            "/NoAuth/images/" => "/opt/rt4/share/html/NoAuth/images/",
+            "/static/" => "/opt/rt4/share/html/static/",
         )
-        $HTTP["url"] !~ "^/NoAuth/images/" {
+        $HTTP["url"] !~ "^/static/" {
             fastcgi.server = (
                 "/" => (
                     "rt" => (
@@ -195,7 +195,7 @@ C</opt/rt4/share/html/>, otherwise RT's source will be served from C</>.
 For example: if you're using the sample FastCGI config above, you might change
 the relevant directives to:
 
-    Alias /rt/NoAuth/images/ /opt/rt4/share/html/NoAuth/images/
+    Alias /rt/static/ /opt/rt4/share/html/static/
     ScriptAlias /rt/ /opt/rt4/sbin/rt-server.fcgi/
 
     # Set DocumentRoot as appropriate for the other content you want to serve

@@ -2,8 +2,8 @@ use strict;
 
 use RT::Test tests => 16;
 
-use constant LogoFile => $RT::MasonComponentRoot .'/NoAuth/images/bpslogo.png';
-use constant FaviconFile => $RT::MasonComponentRoot .'/NoAuth/images/favicon.png';
+use constant LogoFile => $RT::StaticPath .'/images/bpslogo.png';
+use constant FaviconFile => $RT::StaticPath .'/images/favicon.png';
 
 my ($baseurl, $m) = RT::Test->started_ok;
 ok $m->login, 'logged in';
