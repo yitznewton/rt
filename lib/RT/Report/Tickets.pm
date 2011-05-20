@@ -82,9 +82,9 @@ sub Groupings {
 
 
     for my $field (qw(Due Resolved Created LastUpdated Started Starts)) {
-        for my $frequency (qw(Hourly Daily Monthly Annually)) {
+        for my $frequency (@{ $GROUPINGS{'Date'} }) {
             my $item = $field.$frequency;
-            push @fields,  $item,  $item;
+            push @fields, "$field $frequency", "$field.$frequency";
         }
     }
 
