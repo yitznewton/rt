@@ -161,6 +161,8 @@ sub goto_ticket {
 sub goto_create_ticket {
     my $self = shift;
     my $queue = shift;
+    my $query = shift || '';
+    $query = '&' . $query if $query && $query !~ /^&/;
 
     my $id;
     if ( ref $queue ) {
@@ -171,7 +173,8 @@ sub goto_create_ticket {
         die "not yet implemented";
     }
 
-    $self->get($self->rt_base_url . 'Ticket/Create.html?Queue='.$id);
+    $self->get(
+        $self->rt_base_url . 'Ticket/Create.html?Queue=' . $id . $query );
 
     return 1;
 }
