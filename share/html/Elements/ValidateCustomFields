@@ -49,7 +49,10 @@
 my ($valid, @res) = (1, ());
 $CustomFields->GotoFirstItem;
 while ( my $CF = $CustomFields->Next ) {
-    my $field = $NamePrefix . $CF->Id . "-Value";
+    my $field =
+        $NamePrefix
+      . $CF->Id
+      . ( $CF->Type =~ /^(?:Binary|Image)$/ ? '-Upload' : "-Value" );
 
     my $value;
     if ($ARGSRef->{"${field}s-Magic"} and exists $ARGSRef->{"${field}s"}) {
