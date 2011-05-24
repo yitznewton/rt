@@ -51,7 +51,7 @@ $m->submit;
 
 RT::Test->clean_caught_mails;
 
-$m->goto_create_ticket( $queue );
+$m->goto_create_ticket( $queue, 'Requestors=recipient@example.com' );
 $m->form_name('TicketCreate');
 $m->field('Subject', 'Encryption test');
 $m->field('Content', 'Some content');
@@ -120,7 +120,7 @@ $m->submit;
 
 RT::Test->clean_caught_mails;
 
-$m->goto_create_ticket( $queue );
+$m->goto_create_ticket( $queue, 'Requestors=recipient@example.com' );
 $m->form_name('TicketCreate');
 $m->field('Subject', 'Signing test');
 $m->field('Content', 'Some other content');
@@ -193,7 +193,7 @@ $m->submit;
 RT::Test->clean_caught_mails;
 
 
-$m->goto_create_ticket( $queue );
+$m->goto_create_ticket( $queue, 'Requestors=recipient@example.com' );
 $m->form_name('TicketCreate');
 $m->field('Subject', 'Crypt+Sign test');
 $m->field('Content', 'Some final? content');
@@ -258,7 +258,7 @@ MAIL
 
 RT::Test->clean_caught_mails;
 
-$m->goto_create_ticket( $queue );
+$m->goto_create_ticket( $queue, 'Requestors=recipient@example.com' );
 $m->form_name('TicketCreate');
 $m->field('Subject', 'Test crypt-off on encrypted queue');
 $m->field('Content', 'Thought you had me figured out didya');
