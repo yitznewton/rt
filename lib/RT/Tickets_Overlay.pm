@@ -526,6 +526,28 @@ sub _DateLimit {
     die "Incorrect Meta Data for $field"
         unless ( defined $meta->[1] );
 
+    if ( my $subkey = $rest{SUBKEY} ) {
+        my $tz;
+        if ( RT->Config->Get('ChartsTimezonesInDB') ) {
+            my $to = $sb->CurrentUser->UserObj->Timezone
+                || RT->Config->Get('Timezone');
+            $tz = { From => 'UTC', To => $to }
+                if $to && lc $to ne 'utc';
+        }
+        my $function = $RT::Handle->DateTimeFunction(
+            Type     => $subkey,
+            Field    => '?',
+            Timezone => $tz,
+        );
+        return $sb->_SQLLimit(
+            FUNCTION => $function,
+            FIELD    => $meta->[1],
+            OPERATOR => $op,
+            VALUE    => $value,
+            %rest,
+        );
+    }
+
     my $date = RT::Date->new( $sb->CurrentUser );
     $date->Set( Format => 'unknown', Value => $value );
 
