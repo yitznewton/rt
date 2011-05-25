@@ -517,7 +517,7 @@ Meta Data:
 =cut
 
 sub _DateLimit {
-    my ( $sb, $field, $op, $value, @rest ) = @_;
+    my ( $sb, $field, $op, $value, %rest ) = @_;
 
     die "Invalid Date Op: $op"
         unless $op =~ /^(=|>|<|>=|<=)$/;
@@ -546,14 +546,14 @@ sub _DateLimit {
             FIELD    => $meta->[1],
             OPERATOR => ">=",
             VALUE    => $daystart,
-            @rest,
+            %rest,
         );
 
         $sb->_SQLLimit(
             FIELD    => $meta->[1],
             OPERATOR => "<",
             VALUE    => $dayend,
-            @rest,
+            %rest,
             ENTRYAGGREGATOR => 'AND',
         );
 
@@ -565,7 +565,7 @@ sub _DateLimit {
             FIELD    => $meta->[1],
             OPERATOR => $op,
             VALUE    => $date->ISO,
-            @rest,
+            %rest,
         );
     }
 }
