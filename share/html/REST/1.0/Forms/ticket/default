@@ -107,7 +107,7 @@ else {
             {
                 id               => "ticket/new",
                 Queue            => $queue->Name,
-                Requestor        => $session{CurrentUser}->UserObj->Name,
+                Requestor        => $session{CurrentUser}->Name,
                 Subject          => "",
                 Cc               => [],
                 AdminCc          => [],
@@ -162,7 +162,7 @@ else {
         if ($text) {
             $v{MIMEObj} =
                 MIME::Entity->build(
-                    From => $session{CurrentUser}->UserObj->EmailAddress,
+                    From => $session{CurrentUser}->EmailAddress,
                     Subject => $v{Subject},
                     Data => $text
                 );

@@ -308,7 +308,7 @@ $showrows->(
         "/Elements/EmailInput",
         Name    => 'Requestors',
         Size    => '40',
-        Default => $ARGS{Requestors} || $session{CurrentUser}->UserObj->EmailAddress
+        Default => $ARGS{Requestors} || $session{CurrentUser}->EmailAddress
     ),
 
     loc("Cc") =>
