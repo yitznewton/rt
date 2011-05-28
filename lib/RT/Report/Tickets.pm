@@ -214,7 +214,7 @@ sub _FieldToFunction {
 
         $args{'FUNCTION'} = $RT::Handle->DateTimeFunction(
             Type => $subkey,
-            Field => "?",
+            Field => "CASE WHEN ? < '1970-01-02 00:00:00' THEN NULL ELSE ? END",
             Timezone => $tz,
         );
         $args{'FIELD'} = $key;

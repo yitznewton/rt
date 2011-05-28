@@ -549,7 +549,7 @@ sub _DateLimit {
         }
         my $function = $RT::Handle->DateTimeFunction(
             Type     => $subkey,
-            Field    => '?',
+            Field    => "CASE WHEN ? < '1970-01-02 00:00:00' THEN NULL ELSE ? END",
             Timezone => $tz,
         );
         return $sb->_SQLLimit(
@@ -597,6 +597,7 @@ sub _DateLimit {
     }
     else {
         $sb->_SQLLimit(
+            FUNCTION => "CASE WHEN ? < '1970-01-02 00:00:00' THEN NULL ELSE ? END",
             FIELD    => $meta->[1],
             OPERATOR => $op,
             VALUE    => $date->ISO,
