@@ -55,6 +55,12 @@ use strict;
 use warnings;
 
 our %GROUPINGS = (
+    User => [qw(
+        Name RealName NickName
+        EmailAddress
+        Organization
+        Lang City Country Timezone
+    )],
     Date => [qw(
         Time
         Hourly Hour
@@ -75,9 +81,7 @@ sub Groupings {
     );
 
     foreach my $type ( qw(Owner Creator LastUpdatedBy Requestor Cc AdminCc Watcher) ) {
-        push @fields, $type.' '.$_, $type.'.'.$_ foreach qw(
-            Name EmailAddress RealName NickName Organization Lang City Country Timezone
-        );
+        push @fields, map { ("$type $_", "$type.$_") } @{ $GROUPINGS{'User'} };
     }
 
 
