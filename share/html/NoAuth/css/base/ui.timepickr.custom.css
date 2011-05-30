@@ -49,6 +49,11 @@
     font-size: 1.1em;
 }
 
+.ui-timepickr ol.ui-timepickr-row:nth-child(2), .ui-timepickr ol.ui-timepickr-row:nth-child(3) {
+    margin-left: -150px;
+}
+
 .ui-timepickr-button span {
     background: white;
 }
+
