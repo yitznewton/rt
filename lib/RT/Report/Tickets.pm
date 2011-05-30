@@ -84,10 +84,8 @@ sub Groupings {
         push @fields, map { ("$type $_", "$type.$_") } @{ $GROUPINGS{'User'} };
     }
 
-
     for my $field (qw(Due Resolved Created LastUpdated Started Starts)) {
         for my $frequency (@{ $GROUPINGS{'Date'} }) {
-            my $item = $field.$frequency;
             push @fields, "$field $frequency", "$field.$frequency";
         }
     }
