@@ -167,7 +167,12 @@ sub GroupBy {
     my @args = ref $_[0]? @_ : { @_ };
 
     @{ $self->{'_group_by_field'} ||= [] } = map $_->{'FIELD'}, @args;
-    $_ = { $self->_FieldToFunction( %$_ ) } foreach @args;
+
+    foreach my $e ( @args ) {
+        $e = { $self->_FieldToFunction( %$e ) };
+        $e->{'FUNCTION'} = $self->CombineFunctionWithField( %$e )
+            if $e->{'FUNCTION'};
+    }
 
     $self->SUPER::GroupBy( @args );
 }
