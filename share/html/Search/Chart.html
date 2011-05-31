@@ -49,6 +49,7 @@
 $PrimaryGroupBy => 'Queue'
 $SecondaryGroupBy => ''
 $ChartStyle => 'bars'
+$ChartFunction => 'COUNT id'
 $Description => undef
 </%args>
 <%init>
@@ -90,8 +91,11 @@ my @actions = $m->comp( '/Widgets/SavedSearch:process', args => \%ARGS, self => 
 <form method="get" action="<%RT->Config->Get('WebPath')%>/Search/Chart.html">
 <input type="hidden" class="hidden" name="Query" value="<% $ARGS{Query} %>" />
 <input type="hidden" class="hidden" name="SavedChartSearchId" value="<% $saved_search->{SearchId} || 'new' %>" />
-<&|/l, $m->scomp('Elements/SelectChartType', Name => 'ChartStyle', Default => $ChartStyle), $m->scomp('Elements/SelectGroupBy', Name => 'PrimaryGroupBy', Query => $ARGS{Query}, Default => $PrimaryGroupBy) 
-&>[_1] chart by [_2]</&><input type="submit" class="button" value="<%loc('Update Graph')%>" />
+<&|/l,
+  $m->scomp('Elements/SelectChartFunction', Default => $ChartFunction),
+  $m->scomp('Elements/SelectChartType', Default => $ChartStyle),
+  $m->scomp('Elements/SelectGroupBy', Name => 'PrimaryGroupBy', Query => $ARGS{Query}, Default => $PrimaryGroupBy) 
+&>[_1] [_2] chart by [_3]</&><input type="submit" class="button" value="<%loc('Update Graph')%>" />
 </form>
 </&>
 
