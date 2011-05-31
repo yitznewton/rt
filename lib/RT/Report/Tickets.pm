@@ -293,7 +293,9 @@ sub Next {
 
 sub NewItem {
     my $self = shift;
-    return RT::Report::Tickets::Entry->new($RT::SystemUser); # $self->CurrentUser);
+    my $res = RT::Report::Tickets::Entry->new($RT::SystemUser); # $self->CurrentUser);
+    $res->{'column_types'} = $self->{'column_types'};
+    return $res;
 }
 
 
