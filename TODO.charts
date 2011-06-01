@@ -1,0 +1,7 @@
+expand GROUPINGS to list fields and a few callbacks
+
+move abuse protection code from callers to SetupGrouping
+
+protect Function in SetupGrouping from abuse
+
+extend GroupBy in DBIx::SB with CombineFunctionWithField
