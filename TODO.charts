@@ -5,3 +5,12 @@ move abuse protection code from callers to SetupGrouping
 protect Function in SetupGrouping from abuse
 
 extend GroupBy in DBIx::SB with CombineFunctionWithField
+
+Y-axis in charts still always labeled as 'Tickets' even
+if calculate different function
+
+upgrade for saved charts to switch from space separator
+to dot
+
+it'd be nice if full day and month names worked in 
+"Created.DayOfWeek = 'Thu'" searches.
