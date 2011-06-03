@@ -178,8 +178,6 @@ sub GroupBy {
 
     foreach my $e ( @args ) {
         $e = { $self->_FieldToFunction( %$e ) };
-        $e->{'FUNCTION'} = $self->CombineFunctionWithField( %$e )
-            if $e->{'FUNCTION'};
     }
 
     $self->SUPER::GroupBy( @args );

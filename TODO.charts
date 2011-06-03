@@ -4,8 +4,6 @@ move abuse protection code from callers to SetupGrouping
 
 protect Function in SetupGrouping from abuse
 
-extend GroupBy in DBIx::SB with CombineFunctionWithField
-
 Y-axis in charts still always labeled as 'Tickets' even
 if calculate different function
 
