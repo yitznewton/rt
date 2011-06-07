@@ -75,7 +75,7 @@ sub LabelValue {
     my $raw = $self->RawValue( $name, @_ );
 
     my $type = $self->ColumnType( $name );
-    my $meta = $self->FieldMeta( $type->{'FIELD'} );
+    my $meta = $self->FieldMeta( $type->{'KEY'} );
     return $raw unless $meta && $meta->{'Display'};
 
     my $code;
@@ -115,8 +115,6 @@ sub RawValue {
 sub FieldMeta {
     my $self = shift;
     my $field = shift or return undef;
-
-    ($field) = split /\./, $field, 2;
 
     %RT::Report::Tickets::GROUPINGS
         = @RT::Report::Tickets::GROUPINGS
