@@ -79,12 +79,26 @@ sub LabelValue {
     my $raw = $self->RawValue( $name, @_ );
 
     my $type = $self->ColumnType( $name );
-    return $raw unless $type;
+    my $meta = $self->FieldMeta( $type->{'FIELD'} );
+    return $raw unless $meta && $meta->{'Display'};
 
-    my $field = $type->{'FIELD'};
-    return $raw unless $field;
+    my $code;
+    unless ( ref $meta->{'Display'} ) {
+        $code = $self->can( $meta->{'Display'} );
+        unless ( $code ) {
+            $RT::Logger->error("No method ". $meta->{'Display'} );
+            return $raw;
+        }
+    }
+    elsif ( ref( $meta->{'Display'} ) eq 'CODE' ) {
+        $code = $meta->{'Display'};
+    }
+    else {
+        return $raw;
+    }
 
-    my ($key, $subkey) = split /\./, $field, 2;
+    return $code->( $self, %$type, VALUE => $raw );
+
     if ( $subkey && grep $_ eq $subkey, @{ $RT::Report::Tickets::GROUPINGS{'Date'} } ) {
         return $raw unless defined $raw;
         if ( $subkey eq 'DayOfWeek' ) {
@@ -100,6 +114,21 @@ sub LabelValue {
 
 sub RawValue {
     return (shift)->__Value( @_ );
+}
+
+sub FieldMeta {
+    my $self = shift;
+    my $field = shift or return undef;
+
+    ($field) = split /\./, $field, 2;
+
+    %RT::Report::Tickets::GROUPINGS
+        = @RT::Report::Tickets::GROUPINGS
+        unless keys %RT::Report::Tickets::GROUPINGS;
+
+    return $RT::Report::Tickets::GROUPINGS_META{
+        $RT::Report::Tickets::GROUPINGS{ $field }
+    };
 }
 
 RT::Base->_ImportOverlays();
