@@ -98,18 +98,6 @@ sub LabelValue {
     }
 
     return $code->( $self, %$type, VALUE => $raw );
-
-    if ( $subkey && grep $_ eq $subkey, @{ $RT::Report::Tickets::GROUPINGS{'Date'} } ) {
-        return $raw unless defined $raw;
-        if ( $subkey eq 'DayOfWeek' ) {
-            return $RT::Date::DAYS_OF_WEEK[ int $raw ];
-        }
-        elsif ( $subkey eq 'Month' ) {
-            return $RT::Date::MONTHS[ int $raw ];
-        }
-    }
-
-    return $raw;
 }
 
 sub RawValue {
