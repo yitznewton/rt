@@ -12,3 +12,7 @@ to dot
 
 it'd be nice if full day and month names worked in 
 "Created.DayOfWeek = 'Thu'" searches.
+
+we shouldn't sort "day of week" bars according to translated
+values. Now we get Mon, Fri, Wed, Sat, Thu... in russian, so
+it's very annoying to look at.
