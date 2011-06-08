@@ -92,7 +92,7 @@ our %GROUPINGS_META = (
         )],
         Function => 'GenerateUserFunction',
     },
-    User => {
+    Watcher => {
         SubFields => [qw(
             Name RealName NickName
             EmailAddress
