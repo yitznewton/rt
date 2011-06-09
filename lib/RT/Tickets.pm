@@ -569,7 +569,7 @@ sub _DateLimit {
 
         my $function = $RT::Handle->DateTimeFunction(
             Type     => $subkey,
-            Field    => $self->NotSetDateToNullFunction,
+            Field    => $sb->NotSetDateToNullFunction,
             Timezone => $tz,
         );
 
@@ -618,7 +618,7 @@ sub _DateLimit {
     }
     else {
         $sb->_SQLLimit(
-            FUNCTION => $self->NotSetDateToNullFunction,
+            FUNCTION => $sb->NotSetDateToNullFunction,
             FIELD    => $meta->[1],
             OPERATOR => $op,
             VALUE    => $date->ISO,
