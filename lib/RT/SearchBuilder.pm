@@ -344,6 +344,11 @@ sub ColumnMapClassName {
     return $Class;
 }
 
+sub NotSetDateToNullFunction {
+    my $self = shift;
+    return "CASE WHEN ? < '1970-01-02 00:00:00' THEN NULL ELSE ? END";
+}
+
 RT::Base->_ImportOverlays();
 
 1;
