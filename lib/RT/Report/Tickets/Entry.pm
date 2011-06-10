@@ -52,11 +52,11 @@ use base qw/RT::Record/;
 # XXX TODO: how the heck do we acl a report?
 sub CurrentUserHasRight {1}
 
-sub ColumnType {
+sub ColumnInfo {
     my $self = shift;
     my $column = shift;
 
-    return $self->{'column_types'}{$column};
+    return $self->{'column_info'}{$column};
 }
 
 
@@ -74,7 +74,7 @@ sub LabelValue {
 
     my $raw = $self->RawValue( $name, @_ );
 
-    my $info = $self->ColumnType( $name );
+    my $info = $self->ColumnInfo( $name );
 
     my $meta = $info->{'META'};
     return $raw unless $meta && $meta->{'Display'};
