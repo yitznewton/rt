@@ -93,10 +93,8 @@ my $query_string = $m->comp('/Elements/QueryString', %ARGS);
 
 <table class="collection-as-table">
 <tr>
-<th class="collection-as-table"><% loc($tix->Label($PrimaryGroupBy)) %>
-</th>
-<th class="collection-as-table"><&|/l&>Tickets</&>
-</th>
+<th class="collection-as-table"><% $tix->Label( $value_name ) %></th>
+<th class="collection-as-table"><% $tix->Label( $count_name ) %></th>
 </tr>
 % my ($i,$total);
 % while (my $key = shift @sorted_keys) {
