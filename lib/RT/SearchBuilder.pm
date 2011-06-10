@@ -390,7 +390,7 @@ sub NotSetDateToNullFunction {
     my $self = shift;
     my %args = ( FIELD => undef, @_ );
 
-    my $res = "CASE WHEN ? < '1970-01-02 00:00:00' THEN NULL ELSE ? END";
+    my $res = "CASE WHEN ? BETWEEN '1969-12-31 11:59:59' AND '1970-01-01 12:00:01' THEN NULL ELSE ? END";
     if ( $args{FIELD} ) {
         $res = $self->CombineFunctionWithField( %args, FUNCTION => $res );
     }
