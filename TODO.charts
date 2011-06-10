@@ -1,11 +1,6 @@
-expand GROUPINGS to list fields and a few callbacks
-
 move abuse protection code from callers to SetupGrouping
 
 protect Function in SetupGrouping from abuse
-
-Y-axis in charts still always labeled as 'Tickets' even
-if calculate different function
 
 upgrade for saved charts to switch from space separator
 to dot
@@ -16,3 +11,4 @@ it'd be nice if full day and month names worked in
 we shouldn't sort "day of week" bars according to translated
 values. Now we get Mon, Fri, Wed, Sat, Thu... in russian, so
 it's very annoying to look at.
+
