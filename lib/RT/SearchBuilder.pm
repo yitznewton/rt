@@ -355,6 +355,30 @@ sub NotSetDateToNullFunction {
     return $res;
 }
 
+sub DateTimeIntervalFunction {
+    my $self = shift;
+    my %args = @_;
+
+    my $res = '';
+
+    my $db_type = RT->Config->Get('DatabaseType');
+    if ( $db_type eq 'mysql' ) {
+        $res = 'TIMESTAMPDIFF(SECOND'
+                .', '. $self->CombineFunctionWithField( %{ $args{'From'} } )
+                .', '. $self->CombineFunctionWithField( %{ $args{'To'} } )
+            .')'
+        ;
+    }
+    elsif ( $db_type eq 'Pg' ) {
+        $res = 'EXTRACT(EPOCH FROM AGE('
+                . RT::SearchBuilder->CombineFunctionWithField( %{ $args{'From'} } )
+                .', '. RT::SearchBuilder->CombineFunctionWithField( %{ $args{'To'} } )
+            .'))'
+        ;
+    }
+    return $res;
+}
+
 RT::Base->_ImportOverlays();
 
 1;
