@@ -109,6 +109,36 @@ sub RawValue {
     return (shift)->__Value( @_ );
 }
 
+sub FindImplementationCode {
+    my $self = shift;
+    my $value = shift;
+    my $silent = shift;
+
+    my $code;
+    unless ( $value ) {
+        $RT::Logger->error("Value is not defined. Should be method name or code reference")
+            unless $silent;
+        return undef;
+    }
+    elsif ( !ref $value ) {
+        $code = $self->can( $value );
+        unless ( $code ) {
+            $RT::Logger->error("No method $value in ". (ref $self || $self) ." class" )
+                unless $silent;
+            return undef;
+        }
+    }
+    elsif ( ref( $value ) eq 'CODE' ) {
+        $code = $value;
+    }
+    else {
+        $RT::Logger->error("$value is not method name or code reference")
+            unless $silent;
+        return undef;
+    }
+    return $code;
+}
+
 RT::Base->_ImportOverlays();
 
 1;
