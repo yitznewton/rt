@@ -46,6 +46,9 @@
 #
 # END BPS TAGGED BLOCK }}}
 
+use strict;
+use warnings;
+
 package RT::Report::Tickets::Entry;
 use base qw/RT::Record/;
 
@@ -60,6 +63,7 @@ sub ColumnInfo {
 }
 
 sub ColumnsList {
+    my $self = shift;
     return keys %{ $self->{'column_info'} || {} };
 }
 
