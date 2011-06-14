@@ -213,7 +213,7 @@ sub Prepare {
 
     RT::I18N::SetMIMEEntityToEncoding( $MIMEObj,
         RT->Config->Get('EmailOutputEncoding'),
-        'mime_words_ok', );
+        'mime_words_ok', 'is_out' );
 
     # Build up a MIME::Entity that looks like the original message.
     $self->AddAttachments if ( $MIMEObj->head->get('RT-Attach-Message')

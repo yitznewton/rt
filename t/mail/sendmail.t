@@ -2,7 +2,7 @@
 use strict;
 use File::Spec ();
 
-use RT::Test tests => 139;
+use RT::Test tests => 138;
 use Test::Warn;
 
 use RT::EmailParser;
@@ -315,15 +315,7 @@ $parser->ParseMIMEEntityFromScalar($content);
 
  %args =        (message => $content, queue => 1, action => 'correspond');
 
-warnings_like {
  RT::Interface::Email::Gateway(\%args);
-}
-[
-    qr/Encoding error: "\\x\{041f\}" does not map to iso-8859-1 .*/,
-    qr/Encoding error: "\\x\{041f\}" does not map to iso-8859-1 .*/
-    ],
-"The badly formed Russian spam we have isn't actually well-formed UTF8, which makes Encode (correctly) warn";
-
 
  $tickets = RT::Tickets->new(RT->SystemUser);
 $tickets->OrderBy(FIELD => 'id', ORDER => 'DESC');

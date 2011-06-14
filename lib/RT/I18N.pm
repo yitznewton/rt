@@ -192,34 +192,48 @@ sub IsTextualContentType {
 }
 
 
-=head2 SetMIMEEntityToEncoding $entity, $encoding
+=head2 SetMIMEEntityToEncoding $entity, $encoding, $preserve_words, $is_out
 
 An utility function which will try to convert entity body into specified
 charset encoding (encoded as octets, *not* unicode-strings).  It will
 iterate all the entities in $entity, and try to convert each one into
 specified charset if whose Content-Type is 'text/plain'.
 
-the methods are tries in order:
-1) to convert the entity to $encoding, 
-2) to interpret the entity as iso-8859-1 and then convert it to $encoding,
-3) forcibly convert it to $encoding.
+incoming mail:
+1) find encoding
+2) if found then try to convert to utf-8 in croak mode, return if success
+3) guess encoding
+4) if guessed differently then try to convert to utf-8 in croak mode, return
+if success
+5) mark part as application/octet-stream instead of falling back to any
+encoding
+
+outgoing mail:
+1) find encoding
+2) if didn't find then do nothing, send as is, let MUA deal with it
+3) if found then try to convert it to outgoing encoding in croak mode, return
+if success
+4) do nothing otherwise, keep original encoding
 
 This function doesn't return anything meaningful.
 
 =cut
 
 sub SetMIMEEntityToEncoding {
-    my ( $entity, $enc, $preserve_words ) = ( shift, shift, shift );
+    my ( $entity, $enc, $preserve_words, $is_out ) =
+      ( shift, shift, shift, shift );
 
     # do the same for parts first of all
-    SetMIMEEntityToEncoding( $_, $enc, $preserve_words ) foreach $entity->parts;
+    SetMIMEEntityToEncoding( $_, $enc, $preserve_words, $is_out )
+      foreach $entity->parts;
 
     my $charset = _FindOrGuessCharset($entity) or return;
 
     SetMIMEHeadToEncoding(
 	$entity->head,
 	_FindOrGuessCharset($entity, 1) => $enc,
-	$preserve_words
+	$preserve_words,
+    $is_out,
     );
 
     my $head = $entity->head;
@@ -246,35 +260,51 @@ sub SetMIMEEntityToEncoding {
         my $orig_string = $string;
 
         # Convert the body
-        eval {
-            $RT::Logger->debug( "Converting '$charset' to '$enc' for "
-                  . $head->mime_type . " - "
-                  . ( $head->get('subject') || 'Subjectless message' ) );
-            Encode::from_to( $string, $charset => $enc, Encode::FB_CROAK );
-        };
+        $RT::Logger->debug( "Converting '$charset' to '$enc' for "
+              . $head->mime_type . " - "
+              . ( $head->get('subject') || 'Subjectless message' ) );
 
+        eval { Encode::from_to( $string, $charset => $enc, Encode::FB_CROAK ); };
         if ($@) {
-            $RT::Logger->error( "Encoding error: " 
-                  . $@
-                  . " falling back to iso-8859-1 => $enc" );
-            $string = $orig_string;
-            eval {
-                Encode::from_to(
-                    $string,
-                    'iso-8859-1' => $enc,
-                    Encode::FB_CROAK
-                );
-            };
-            if ($@) {
-                $RT::Logger->error( "Encoding error: " 
-                      . $@
-                      . " forcing conversion to $charset => $enc" );
-                $string = $orig_string;
-                Encode::from_to( $string, $charset => $enc );
+            if ($is_out) {
+                return;
+            }
+            else {
+                my $success;
+
+                my $err = $@; # _GuessCharset may override $@
+                my $guess = _GuessCharset($string);
+                if ($guess) {
+                    $RT::Logger->error( "Encoding error: " 
+                          . $err
+                          . " falling back to $guess => $enc" );
+                    $string = $orig_string;
+
+                    if ( $guess eq $enc ) {
+                        $success = 1;
+                    }
+                    else {
+                        eval {
+                            Encode::from_to(
+                                $string,
+                                $guess => $enc,
+                                Encode::FB_CROAK
+                            );
+                        };
+                        $success = !$@;
+                    }
+                }
+
+                if ( !$success ) {
+                    $RT::Logger->error( "Encoding error: " 
+                          . $@
+                          . " falling back to application/octet-stream" );
+                    $head->mime_attr(
+                        "content-type" => 'application/octet-stream' );
+                    return;
+                }
             }
         }
-
-        # }}}
 
         my $new_body = MIME::Body::InCore->new($string);
 
@@ -560,7 +590,7 @@ sub _CanonicalizeCharset {
 }
 
 
-=head2 SetMIMEHeadToEncoding HEAD OLD_CHARSET NEW_CHARSET
+=head2 SetMIMEHeadToEncoding HEAD OLD_CHARSET NEW_CHARSET PRESERVE_WORDS IS_OUT
 
 Converts a MIME Head from one encoding to another. This totally violates the RFC.
 We should never need this. But, Surprise!, MUAs are badly broken and do this kind of stuff
@@ -570,7 +600,8 @@ all the time
 =cut
 
 sub SetMIMEHeadToEncoding {
-    my ( $head, $charset, $enc, $preserve_words ) = ( shift, shift, shift, shift );
+    my ( $head, $charset, $enc, $preserve_words, $is_out ) =
+      ( shift, shift, shift, shift, shift );
 
     $charset = _CanonicalizeCharset($charset);
     $enc     = _CanonicalizeCharset($enc);
@@ -586,26 +617,51 @@ sub SetMIMEHeadToEncoding {
             my $orig_value = $value;
             if ( $charset ne $enc ) {
                 eval {
-                    Encode::from_to( $value, $charset => $enc, Encode::FB_CROAK );
+                    Encode::from_to(
+                        $value,
+                        $charset => $enc,
+                        Encode::FB_CROAK
+                    );
                 };
                 if ($@) {
-                    $RT::Logger->error( "Encoding error: " 
-                          . $@
-                          . " falling back to iso-8859-1 => $enc" );
-                    $value = $orig_value;
-                    eval {
-                        Encode::from_to(
-                            $value,
-                            'iso-8859-1' => $enc,
-                            Encode::FB_CROAK
-                        );
-                    };
-                    if ($@) {
-                        $RT::Logger->error( "Encoding error: " 
-                              . $@
-                              . " forcing conversion to $charset => $enc" );
+                    if ($is_out) {
                         $value = $orig_value;
-                        Encode::from_to( $value, $charset => $enc );
+                        $head->add( $tag, $value );
+                        next;
+                    }
+                    else {
+                        my $err = $@; # _GuessCharset may override $@
+                        my $guess = _GuessCharset($orig_value);
+                        my $success;
+
+                        if ($guess) {
+                            $RT::Logger->error( "Encoding error: " 
+                                  . $err
+                                  . " falling back to $guess => $enc" );
+                            $value = $orig_value;
+
+                            if ( $guess eq $enc ) {
+                                $success = 1;
+                            }
+                            else {
+                                eval {
+                                    Encode::from_to(
+                                        $value,
+                                        $guess => $enc,
+                                        Encode::FB_CROAK
+                                    );
+                                };
+                                $success = !$@;
+                            }
+                        }
+
+                        if ( !$success ) {
+                            $RT::Logger->error( "Encoding error: " 
+                                  . $@
+                                  . " forcing conversion to $charset => $enc" );
+                            $value = $orig_value;
+                            Encode::from_to( $value, $charset => $enc );
+                        }
                     }
                 }
             }
