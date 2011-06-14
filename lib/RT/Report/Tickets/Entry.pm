@@ -46,6 +46,9 @@
 #
 # END BPS TAGGED BLOCK }}}
 
+use strict;
+use warnings;
+
 package RT::Report::Tickets::Entry;
 
 use warnings;
@@ -64,6 +67,7 @@ sub ColumnInfo {
 }
 
 sub ColumnsList {
+    my $self = shift;
     return keys %{ $self->{'column_info'} || {} };
 }
 
