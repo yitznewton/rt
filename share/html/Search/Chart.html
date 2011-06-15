@@ -48,7 +48,7 @@
 <%args>
 $PrimaryGroupBy => 'Queue'
 $ChartStyle => 'bars'
-$ChartFunction => 'COUNT id'
+@ChartFunction => ('COUNT')
 $Description => undef
 </%args>
 <%init>
@@ -85,16 +85,31 @@ my @actions = $m->comp( '/Widgets/SavedSearch:process', args => \%ARGS, self => 
 <& /Search/Elements/Chart, %ARGS &>
 
 <br />
-<&| /Widgets/TitleBox, title => loc('Graph Properties')&>
-<form method="get" action="<%RT->Config->Get('WebPath')%>/Search/Chart.html">
+<form method="get" action="<% RT->Config->Get('WebPath') %>/Search/Chart.html">
 <input type="hidden" class="hidden" name="Query" value="<% $ARGS{Query} %>" />
 <input type="hidden" class="hidden" name="SavedChartSearchId" value="<% $saved_search->{SearchId} || 'new' %>" />
-<&|/l,
-  $m->scomp('Elements/SelectChartFunction', Default => $ChartFunction),
-  $m->scomp('Elements/SelectChartType', Default => $ChartStyle),
-  $m->scomp('Elements/SelectGroupBy', Name => 'PrimaryGroupBy', Query => $ARGS{Query}, Default => $PrimaryGroupBy) 
-&>[_1] [_2] chart by [_3]</&><input type="submit" class="button" value="<%loc('Update Graph')%>" />
-</form>
+
+<&| /Widgets/TitleBox, title => loc('Properties') &>
+<% loc('Group by') %> <& Elements/SelectGroupBy,
+    Name => 'PrimaryGroupBy',
+    Query => $ARGS{Query},
+    Default => $PrimaryGroupBy
+&><br />
+
+<% loc('Count') %> <& Elements/SelectChartFunction, Default => $ChartFunction[0] &>
+<& Elements/SelectChartFunction, Default => $ChartFunction[1], ShowEmpty => 1 &>
+<& Elements/SelectChartFunction, Default => $ChartFunction[2], ShowEmpty => 1 &><br />
+
 </&>
+
+<&| /Widgets/TitleBox, title => loc('Picture') &>
+<% loc('Style') %> <& Elements/SelectChartType, Default => $ChartStyle, Name => 'ChartStyle' &>
+</&>
+
+<&| /Widgets/TitleBox, title => loc('Table') &>
+</&>
+
+<& /Elements/Submit, Label => loc('Update Graph'), Name => 'Update' &>
+</form>
 
 <& /Widgets/SavedSearch:show, %ARGS, Action => 'Chart.html', self => $saved_search, Title => loc('Saved charts') &>
