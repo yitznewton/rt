@@ -8,3 +8,13 @@ to dot
 it'd be nice if full day and month names worked in 
 "Created.DayOfWeek = 'Thu'" searches.
 
+support more than one calculated function in diagrams,
+at least in bars
+
+support multiple groupings
+
+  support putting grouppings as columns of the table
+
+  support horizontal totals when there are gropings as columns
+
+
