@@ -2,8 +2,9 @@ move abuse protection code from callers to SetupGrouping
 
 protect Function in SetupGrouping from abuse
 
-upgrade for saved charts to switch from space separator
-to dot
+upgrade script for saved charts
+* switch from space separator to dot
+* switch from PrimaryGroupBy to GroupBy name
 
 it'd be nice if full day and month names worked in 
 "Created.DayOfWeek = 'Thu'" searches.
