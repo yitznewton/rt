@@ -413,8 +413,8 @@ sub DateTimeIntervalFunction {
     }
     elsif ( $db_type eq 'Pg' ) {
         $res = 'EXTRACT(EPOCH FROM AGE('
-                . RT::SearchBuilder->CombineFunctionWithField( %{ $args{'From'} } )
-                .', '. RT::SearchBuilder->CombineFunctionWithField( %{ $args{'To'} } )
+                . $self->CombineFunctionWithField( %{ $args{'From'} } )
+                .', '. $self->CombineFunctionWithField( %{ $args{'To'} } )
             .'))'
         ;
     }
