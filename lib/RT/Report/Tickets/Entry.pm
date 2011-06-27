@@ -127,6 +127,7 @@ sub Query {
             push @parts, "$field $op $value";
         }
     }
+    return () unless @parts;
     return join ' AND ', grep defined && length, @parts;
 }
 
