@@ -483,7 +483,6 @@ sub _DoSearch {
         );
     }
     else {
-        $self->AddEmptyRows;
     }
 }
 
@@ -537,31 +536,6 @@ sub NewItem {
     my $res = RT::Report::Tickets::Entry->new($self->CurrentUser);
     $res->{'column_info'} = $self->{'column_info'};
     return $res;
-}
-
-
-=head2 AddEmptyRows
-
-If we're grouping on a criterion we know how to add zero-value rows
-for, do that.
-
-=cut
-
-sub AddEmptyRows {
-    my $self = shift;
-    if ( @{ $self->{'_group_by_field'} || [] } == 1 && $self->{'_group_by_field'}[0] eq 'Status' ) {
-        my %has = map { $_->__Value('Status') => 1 } @{ $self->ItemsArrayRef || [] };
-
-        foreach my $status ( grep !$has{$_}, RT::Queue->new($self->CurrentUser)->StatusArray ) {
-
-            my $record = $self->NewItem;
-            $record->LoadFromHash( {
-                id     => 0,
-                status => $status
-            } );
-            $self->AddRecord($record);
-        }
-    }
 }
 
 { our @SORT_OPS;
