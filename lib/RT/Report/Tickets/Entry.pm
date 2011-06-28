@@ -96,7 +96,7 @@ sub LabelValue {
 }
 
 sub RawValue {
-    return (shift)->__Value( @_ );
+    return (shift)->DBIx::SearchBuilder::Record::__Value( @_ );
 }
 
 sub Query {
