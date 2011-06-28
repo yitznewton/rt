@@ -34,7 +34,7 @@ foreach my $section (qw(thead tbody tfoot)) {
             push @class, ($cell->{'type'}) unless $cell->{'type'} eq 'head';
             $m->out(' class="'. $eh->( join ' ', @class ) .'"');
 
-            foreach my $dir ( grep $cell->{$_}, qw(rawspan colspan) ) {
+            foreach my $dir ( grep $cell->{$_}, qw(rowspan colspan) ) {
                 my $value = int $cell->{ $dir };
                 $m->out(qq{ $dir="$value"});
             }
