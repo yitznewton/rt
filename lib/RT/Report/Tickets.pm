@@ -227,6 +227,22 @@ foreach my $pair (qw(
 
 our %STATISTICS;
 
+my $duration_to_string_cb = sub {
+    my $self = shift;
+    my %args = @_;
+    my $v = $args{'VALUE'};
+    unless ( ref $v ) {
+        return $self->loc("(no value)") unless defined $v && length $v;
+        return RT::Date->new( $self->CurrentUser )->DurationAsString( $v );
+    }
+
+    my $date = RT::Date->new( $self->CurrentUser );
+    foreach my $e ( values %$v ) {
+        $e = $date->DurationAsString( $e ) if defined $e && length $e;
+        $e = $self->loc("(no value)") unless defined $e && length $e;
+    }
+};
+
 our %STATISTICS_META = (
     Count => {
         Function => sub {
@@ -254,15 +270,9 @@ our %STATISTICS_META = (
         Function => sub {
             my $self = shift;
             my ($function, $field) = @_;
-            return (FUNCTION => $function, FIELD => $field);
+            return (FUNCTION => "$function(?)*60", FIELD => $field);
         },
-        Display => sub {
-            my $self = shift;
-            my %args = @_;
-            my $v = $args{'VALUE'};
-            return $self->loc("(no value)") unless defined $v && length $v;
-            return RT::Date->new( $self->CurrentUser )->DurationAsString( $v*60 );
-        },
+        Display => $duration_to_string_cb,
     },
     DateTimeInterval => {
         Function => sub {
@@ -276,13 +286,7 @@ our %STATISTICS_META = (
 
             return (FUNCTION => "$function($interval)");
         },
-        Display => sub {
-            my $self = shift;
-            my %args = @_;
-            my $v = $args{'VALUE'};
-            return $self->loc("(no value)") unless defined $v && length $v;
-            return RT::Date->new( $self->CurrentUser )->DurationAsString( $v );
-        },
+        Display => $duration_to_string_cb,
     },
 );
 
