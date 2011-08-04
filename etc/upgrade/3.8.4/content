@@ -47,7 +47,7 @@ our @Final = (
             if ( my $struct = eval { Storable::thaw( $argument ) } ) {
                 $new = $converter->( $struct );
             } else {
-                $new = join /, /, grep length, split /[^0-9]+/, $argument;
+                $new = join ', ', grep length, split /[^0-9]+/, $argument;
             }
             next if $new eq $argument;
 
