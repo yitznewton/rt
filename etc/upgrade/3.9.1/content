@@ -1,6 +1,8 @@
-@Initial = (
+use strict;
+use warnings;
+
+our @Initial = (
     sub {
-        use strict;
         $RT::Logger->debug('Make sure templates all have known types');
 
         my $templates = RT::Templates->new(RT->SystemUser);
@@ -29,7 +31,6 @@
         }
     },
     sub {
-        use strict;
         $RT::Logger->debug('Adding ExecuteCode right to principals that currently have ModifyTemplate or ModifyScrips');
 
         my $acl = RT::ACL->new(RT->SystemUser);
