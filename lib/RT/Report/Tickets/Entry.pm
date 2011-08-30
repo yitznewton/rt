@@ -135,7 +135,7 @@ sub Query {
         }
     }
     return () unless @parts;
-    return join ' AND ', grep defined && length, @parts;
+    return join ' AND ', map "($_)", grep defined && length, @parts;
 }
 
 sub LabelCode {
