@@ -239,10 +239,12 @@ my $duration_to_string_cb = sub {
     }
 
     my $date = RT::Date->new( $self->CurrentUser );
-    foreach my $e ( values %$v ) {
+    my %res = %$v;
+    foreach my $e ( values %res ) {
         $e = $date->DurationAsString( $e ) if defined $e && length $e;
         $e = $self->loc("(no value)") unless defined $e && length $e;
     }
+    return \%res;
 };
 
 our %STATISTICS_META = (
