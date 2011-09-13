@@ -103,9 +103,6 @@ my @actions = $m->comp( '/Widgets/SavedSearch:process', args => \%ARGS, self => 
 <% loc('Style') %> <& Elements/SelectChartType, Default => $ChartStyle, Name => 'ChartStyle' &>
 </&>
 
-<&| /Widgets/TitleBox, title => loc('Table') &>
-</&>
-
 <& /Elements/Submit, Label => loc('Update Graph'), Name => 'Update' &>
 </form>
 
