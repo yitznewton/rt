@@ -199,7 +199,7 @@ our @STATISTICS = (
 );
 
 foreach my $field (qw(TimeWorked TimeEstimated TimeLeft)) {
-    my $friendly = lc join ' ', split /(?<=[a-z])(?=A-Z)/, $field;
+    my $friendly = lc join ' ', split /(?<=[a-z])(?=[A-Z])/, $field;
     push @STATISTICS, (
         "ALL($field)" => [ucfirst $friendly,   'TimeAll',     $field ],
         "SUM($field)" => ["Total $friendly",   'Time', 'SUM', $field ],
