@@ -625,6 +625,7 @@ sub __Value {
     }
 
     my $value = $self->SUPER::__Value($field);
+    return $value if ref $value;
 
     if ( $args{'decode_utf8'} ) {
         if ( !utf8::is_utf8($value) ) {
