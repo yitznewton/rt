@@ -1514,6 +1514,24 @@ sub _CustomFieldLimit {
         }
     }
 
+    if ( $cf && $cf->Type =~ /^Date(?:Time)?$/ ) {
+        my $date = RT::Date->new( $self->CurrentUser );
+        $date->Set( Format => 'unknown', Value => $value );
+        if ( $date->Unix ) {
+
+            # don't consider tz for Date, use server's all the time.
+            if ( $cf->Type eq 'Date' || $value !~ /:/ ) {
+                $value = $date->Date( Timezone => 'server' );
+            }
+            else {
+                $value = $date->DateTime;
+            }
+        }
+        else {
+            $RT::Logger->warn("$value is not a valid date string");
+        }
+    }
+
     my $single_value = !$cf || !$cfid || $cf->SingleValue;
 
     my $cfkey = $cfid ? $cfid : "$queue.$field";
@@ -1611,52 +1629,41 @@ sub _CustomFieldLimit {
             $cf->Load($field);
 
             # need special treatment for Date
-            if ( $cf->Type eq 'DateTime' && $op eq '=' ) {
+            if ( $cf->Type eq 'DateTime' && $op eq '=' && $value !~ /:/ ) {
 
-                if ( $value =~ /:/ ) {
-                    # there is time speccified.
-                    my $date = RT::Date->new( $self->CurrentUser );
-                    $date->Set( Format => 'unknown', Value => $value );
-                    $self->_SQLLimit(
-                        ALIAS    => $TicketCFs,
-                        FIELD    => 'Content',
-                        OPERATOR => "=",
-                        VALUE    => $date->ISO,
-                        %rest,
-                    );
-                }
-                else {
                 # no time specified, that means we want everything on a
                 # particular day.  in the database, we need to check for >
                 # and < the edges of that day.
-                    my $date = RT::Date->new( $self->CurrentUser );
-                    $date->Set( Format => 'unknown', Value => $value );
-                    $date->SetToMidnight( Timezone => 'server' );
-                    my $daystart = $date->ISO;
-                    $date->AddDay;
-                    my $dayend = $date->ISO;
+                my $date = RT::Date->new( $self->CurrentUser );
+                $date->Set(
+                    Format   => 'unknown',
+                    Value    => $value,
+                    Timezone => 'UTC',
+                );
+                my $daystart = $date->ISO;
+                $date->AddDay;
+                my $dayend = $date->ISO;
 
-                    $self->_OpenParen;
+                $self->_OpenParen;
 
-                    $self->_SQLLimit(
-                        ALIAS    => $TicketCFs,
-                        FIELD    => 'Content',
-                        OPERATOR => ">=",
-                        VALUE    => $daystart,
-                        %rest,
-                    );
+                $self->_SQLLimit(
+                    ALIAS    => $TicketCFs,
+                    FIELD    => 'Content',
+                    OPERATOR => ">=",
+                    VALUE    => $daystart,
+                    %rest,
+                );
 
-                    $self->_SQLLimit(
-                        ALIAS    => $TicketCFs,
-                        FIELD    => 'Content',
-                        OPERATOR => "<=",
-                        VALUE    => $dayend,
-                        %rest,
-                        ENTRYAGGREGATOR => 'AND',
-                    );
+                $self->_SQLLimit(
+                    ALIAS    => $TicketCFs,
+                    FIELD    => 'Content',
+                    OPERATOR => "<=",
+                    VALUE    => $dayend,
+                    %rest,
+                    ENTRYAGGREGATOR => 'AND',
+                );
 
-                    $self->_CloseParen;
-                }
+                $self->_CloseParen;
             }
             elsif ( $op eq '=' || $op eq '!=' || $op eq '<>' ) {
                 if ( length( Encode::encode_utf8($value) ) < 256 ) {
