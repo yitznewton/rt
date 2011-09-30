@@ -114,7 +114,7 @@
 <textarea cols="80" rows="<% $lines %>" name="Scrip-<% $id %>-CustomPrepareCode"><% $code %></textarea>
 </td></tr>
 
-<tr><td class="labeltop"><&|/l&>Custom action cleanup code</&>:</td><td class="value">
+<tr><td class="labeltop"><&|/l&>Custom action commit code</&>:</td><td class="value">
 % $code = $ARGS{"Scrip-$id-CustomCommitCode"} || $scrip->CustomCommitCode || '';
 % $lines = @{[ $code =~ /\n/gs ]} + 3;
 % $lines = $min_lines if $lines < $min_lines;
