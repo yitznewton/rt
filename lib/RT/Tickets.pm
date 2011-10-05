@@ -1520,8 +1520,12 @@ sub _CustomFieldLimit {
         if ( $date->Unix ) {
 
             # don't consider tz for Date, use server's all the time.
-            if (   $cf->Type eq 'Date'
-                || $value !~ /:|am|pm|hours|minutes|seconds/i )
+            if (
+                   $cf->Type eq 'Date'
+                || $value =~ /^\s*(?:today|tomorrow|yesterday)\s*$/i
+                || (   $value !~ /midnight|\d+:\d+:\d+/i
+                    && $date->Time( Timezone => 'user' ) eq '00:00:00' )
+              )
             {
                 $value = $date->Date( Timezone => 'server' );
             }
