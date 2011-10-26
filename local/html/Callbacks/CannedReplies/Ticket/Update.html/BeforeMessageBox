@@ -1,0 +1,7 @@
+Canned reply: <& /Admin/Elements/SelectTemplate, Name => "Canned-Template", Queue => $TicketObj->QueueObj->id &>
+<input type="submit" name="select_template" value="Go">
+
+<%init>
+my $TicketObj = LoadTicket($ARGS{'id'});
+</%init>
+

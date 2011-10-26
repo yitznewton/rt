@@ -1,0 +1,29 @@
+%#
+%# Allows use of templates as 'canned replies' in update screen.
+%# Looks up the template specified, parses it and displays the parsed
+%# template content.
+%#
+% if ($content) {
+<% $content %>
+% }
+<%init>
+my $template;
+my $trans = new RT::Transaction( $session{'CurrentUser'} );
+my $content = "";
+
+if ( $ARGS{'select_template'} ) {
+    my $template_id = $ARGS{'Canned-Template'};
+    if ($template_id) {
+        $template = RT::Template->new($session{'CurrentUser'});
+        $template->Load($template_id);
+        if ($template->id) {
+            my $TicketObj = LoadTicket($ARGS{'id'});
+            $template->Parse(TicketObj => $TicketObj,
+                             TransactionObj => $trans);
+            $content = $template->MIMEObj->stringify;
+        }
+    }
+
+}
+</%init>
+
