@@ -9,9 +9,9 @@ define('DEFAULT_HOURS_OLD', 48);
 require_once(dirname(__FILE__) . '/RtTicketUsers.class.php');
 require_once(dirname(__FILE__) . '/RtTicketMailer.class.php');
 
-$theTickets = new RtTicketUsers();
-
 $args = get_arg_array($argv);
+
+$theTickets = new RtTicketUsers( $args['d'] );
 
 if (in_array('s', array_keys($args)) === true) {
   $status_string = explode(',', $args['s']);
