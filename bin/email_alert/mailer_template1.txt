@@ -1,0 +1,11 @@
+Dear {realName},
+
+This is an automated reminder from RT. Ticket #{id} at
+https://rt.tourolib.org/Ticket/Display.html?id={id}
+is '{status}' and has not been updated in {age}.
+
+Resolve: https://rt.tourolib.org/Ticket/Display.html?Action=Resolve&id={id}
+Delete:  https://rt.tourolib.org/Ticket/Display.html?Action=Delete&id={id}
+
+Thank you,
+The Library Systems Team
