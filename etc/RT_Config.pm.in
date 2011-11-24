@@ -1578,7 +1578,7 @@ Set($ShowTransactionImages, 1);
 Normally plaintext attachments are displayed as HTML with line breaks
 preserved.  This causes space- and tab-based formatting not to be
 displayed correctly.  By setting $PlainTextPre messages will be
-displayed using <pre>; this option overrides C<$PlainTextMono>.
+displayed using <pre>.
 
 =cut
 
@@ -1589,7 +1589,7 @@ Set($PlainTextPre, 0);
 
 Set C<$PlainTextMono> to 1 to use monospaced font and preserve
 formatting; unlike C<$PlainTextPre>, the text will wrap to fit width
-of the browser window.
+of the browser window; this option overrides C<$PlainTextPre>.
 
 =cut
 
@@ -1616,9 +1616,7 @@ provides two formats:
   link after the URL.
 
 * 'httpurl_overwrite': also detects URLs as 'httpurl' format, but
-  replaces the URL with a link and *adds spaces* into the text if it
-  is longer then 30 characters. This allows the browser to wrap long
-  URLs and avoid horizontal scrolling.
+  replaces the URL with a link.
 
 See F<share/html/Elements/MakeClicky> for documentation on how to add
 your own styles of link detection.

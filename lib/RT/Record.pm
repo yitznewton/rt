@@ -265,6 +265,18 @@ an error.
 If this object's table has any of the following atetributes defined as
 'Auto', this routine will automatically fill in their values.
 
+=over
+
+=item Created
+
+=item Creator
+
+=item LastUpdated
+
+=item LastUpdatedBy
+
+=back
+
 =cut
 
 sub Create {
@@ -664,8 +676,8 @@ sub _BuildTableAttributes {
 
     }
 
-    foreach my $column (%$attributes) {
-        foreach my $attr ( %{ $attributes->{$column} } ) {
+    foreach my $column (keys %$attributes) {
+        foreach my $attr ( keys %{ $attributes->{$column} } ) {
             $_TABLE_ATTR->{$class}->{$column}->{$attr} = $attributes->{$column}->{$attr};
         }
     }
@@ -673,8 +685,8 @@ sub _BuildTableAttributes {
         next unless UNIVERSAL::can( $self, $method );
         $attributes = $self->$method();
 
-        foreach my $column (%$attributes) {
-            foreach my $attr ( %{ $attributes->{$column} } ) {
+        foreach my $column ( keys %$attributes ) {
+            foreach my $attr ( keys %{ $attributes->{$column} } ) {
                 $_TABLE_ATTR->{$class}->{$column}->{$attr} = $attributes->{$column}->{$attr};
             }
         }
